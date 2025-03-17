@@ -43,8 +43,8 @@ function custom_category_slider_shortcode($atts) {
             'title' => 'Slide 1'
         ),
         array(
-            'mobile_image' => 'https://mellmon.in/wp-content/uploads/2024/05/bnnn-1-1536x854.webp',
-            'desktop_image' => 'https://mellmon.in/wp-content/uploads/2024/05/bnnn-1-1536x854.webp',
+            'mobile_image' => 'https://mellmon.in/wp-content/uploads/2025/03/Webppro_out_85b0767aad573290e0aa2728554f3ca6-1536x854-1.webp',
+            'desktop_image' => 'https://mellmon.in/wp-content/uploads/2025/03/Webppro_out_85b0767aad573290e0aa2728554f3ca6-1536x854-1.webp',
             'link' => '#',
             'title' => 'Slide 2'
         ),

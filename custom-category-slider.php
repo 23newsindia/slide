@@ -20,7 +20,7 @@ function custom_category_slider_scripts() {
         'custom-category-slider',
         plugins_url('css/slider.css', __FILE__),
         array(),
-        $css_version // Use file modification time as version
+        $css_version
     );
 
     // Enqueue JavaScript with dynamic version
@@ -28,17 +28,64 @@ function custom_category_slider_scripts() {
         'custom-category-slider',
         plugins_url('js/slider.js', __FILE__),
         array(),
-        $js_version, // Use file modification time as version
-        true // Load script in footer
+        $js_version,
+        true
     );
 }
 add_action('wp_enqueue_scripts', 'custom_category_slider_scripts');
 
+function get_optimized_slider_image_data($image_url, $position = 1, $title = '') {
+    // Convert URL to attachment ID
+    $image_id = attachment_url_to_postid($image_url);
+    
+    if (!$image_id) {
+        return array(
+            'url' => $image_url, // Fallback to original URL if no attachment found
+            'width' => '',
+            'height' => '',
+            'alt' => $title,
+            'loading' => 'lazy',
+            'fetchpriority' => 'auto'
+        );
+    }
+
+    // Get image sizes
+    $mobile_size = 'large'; // Adjust based on your needs
+    $desktop_size = 'full';
+
+    // Get image data for both sizes
+    $mobile_data = wp_get_attachment_image_src($image_id, $mobile_size);
+    $desktop_data = wp_get_attachment_image_src($image_id, $desktop_size);
+    
+    // Determine loading strategy based on position
+    $is_mobile = wp_is_mobile();
+    $eager_load_threshold = $is_mobile ? 1 : 2;
+    $should_eager_load = $position <= $eager_load_threshold;
+    
+    // Get alt text
+    $alt_text = get_post_meta($image_id, '_wp_attachment_image_alt', true);
+    if (empty($alt_text)) {
+        $alt_text = $title;
+    }
+    
+    return array(
+        'mobile_url' => $mobile_data ? $mobile_data[0] : $image_url,
+        'mobile_width' => $mobile_data ? $mobile_data[1] : '',
+        'mobile_height' => $mobile_data ? $mobile_data[2] : '',
+        'desktop_url' => $desktop_data ? $desktop_data[0] : $image_url,
+        'desktop_width' => $desktop_data ? $desktop_data[1] : '',
+        'desktop_height' => $desktop_data ? $desktop_data[2] : '',
+        'alt' => $alt_text,
+        'loading' => $should_eager_load ? 'eager' : 'lazy',
+        'fetchpriority' => $position === 1 ? 'high' : 'auto'
+    );
+}
+
 function custom_category_slider_shortcode($atts) {
     $slides = array(
         array(
-            'mobile_image' => 'https://mellmon.in/wp-content/uploads/2024/05/bnnn-1-1536x854.webp',
-            'desktop_image' => 'https://mellmon.in/wp-content/uploads/2024/05/bnnn-1-1536x854.webp',
+            'mobile_image' => 'https://mellmon.in/wp-content/uploads/2025/03/bnnn-1-1536x854-1.webp',
+            'desktop_image' => 'https://mellmon.in/wp-content/uploads/2025/03/bnnn-1-1536x854-1.webp',
             'link' => '#',
             'title' => 'Slide 1'
         ),
@@ -49,8 +96,8 @@ function custom_category_slider_shortcode($atts) {
             'title' => 'Slide 2'
         ),
         array(
-            'mobile_image' => 'https://mellmon.in/wp-content/uploads/2024/05/bnnn-1-1536x854.webp',
-            'desktop_image' => 'https://mellmon.in/wp-content/uploads/2024/05/bnnn-1-1536x854.webp',
+            'mobile_image' => 'https://mellmon.in/wp-content/uploads/2025/03/bnnn-1-1536x854-1.webp',
+            'desktop_image' => 'https://mellmon.in/wp-content/uploads/2025/03/bnnn-1-1536x854-1.webp',
             'link' => '#',
             'title' => 'Slide 3'
         ),
@@ -63,13 +110,18 @@ function custom_category_slider_shortcode($atts) {
         <div class="VueCarousel mobileBannerView">
             <div class="VueCarousel-wrapper">
                 <div class="VueCarousel-inner">
-                    <?php foreach ($slides as $index => $slide) : ?>
+                    <?php foreach ($slides as $index => $slide) : 
+                        $mobile_image = get_optimized_slider_image_data($slide['mobile_image'], $index + 1, $slide['title']);
+                    ?>
                         <div class="VueCarousel-slide <?php echo $index === 0 ? 'VueCarousel-slide-active VueCarousel-slide-center' : ''; ?>">
                             <div class="prelative shimmerBgColor">
                                 <a href="<?php echo esc_url($slide['link']); ?>" class="d-inline-block w-100">
-                                    <img loading="<?php echo $index < 2 ? 'eager' : 'lazy'; ?>"
-                                         src="<?php echo esc_url($slide['mobile_image']); ?>"
-                                         alt="<?php echo esc_attr($slide['title']); ?>"
+                                    <img src="<?php echo esc_url($mobile_image['mobile_url']); ?>"
+                                         alt="<?php echo esc_attr($mobile_image['alt']); ?>"
+                                         width="<?php echo esc_attr($mobile_image['mobile_width']); ?>"
+                                         height="<?php echo esc_attr($mobile_image['mobile_height']); ?>"
+                                         loading="<?php echo esc_attr($mobile_image['loading']); ?>"
+                                         fetchpriority="<?php echo esc_attr($mobile_image['fetchpriority']); ?>"
                                          class="w-100 img-h-auto customFade-active"
                                     />
                                 </a>
@@ -95,14 +147,19 @@ function custom_category_slider_shortcode($atts) {
         <div class="VueCarousel bannerview">
             <div class="VueCarousel-wrapper">
                 <div class="VueCarousel-inner">
-                    <?php foreach ($slides as $index => $slide) : ?>
+                    <?php foreach ($slides as $index => $slide) : 
+                        $desktop_image = get_optimized_slider_image_data($slide['desktop_image'], $index + 1, $slide['title']);
+                    ?>
                         <div class="VueCarousel-slide <?php echo $index === 0 ? 'VueCarousel-slide-active VueCarousel-slide-center' : ''; ?>">
                             <div class="prelative shimmerBgColor">
                                 <div class="shimmerBgColor">
                                     <a href="<?php echo esc_url($slide['link']); ?>" class="clickable d-inline-block w-100">
-                                        <img loading="<?php echo $index < 2 ? 'eager' : 'lazy'; ?>"
-                                             src="<?php echo esc_url($slide['desktop_image']); ?>"
-                                             alt="<?php echo esc_attr($slide['title']); ?>"
+                                        <img src="<?php echo esc_url($desktop_image['desktop_url']); ?>"
+                                             alt="<?php echo esc_attr($desktop_image['alt']); ?>"
+                                             width="<?php echo esc_attr($desktop_image['desktop_width']); ?>"
+                                             height="<?php echo esc_attr($desktop_image['desktop_height']); ?>"
+                                             loading="<?php echo esc_attr($desktop_image['loading']); ?>"
+                                             fetchpriority="<?php echo esc_attr($desktop_image['fetchpriority']); ?>"
                                              class="w-100 img-auto customFade-active"
                                         />
                                     </a>

@@ -1,4 +1,3 @@
-
 /* Base Styles */
 .headtop {
     position: relative;
@@ -22,27 +21,29 @@
     display: flex;
     transition: transform 0.5s ease;
     flex-wrap: nowrap;
-    width: 100%; /* Ensure inner container takes full width */
 }
 
 .VueCarousel-slide {
-    flex: 0 0 100%; /* Each slide takes 100% of the container width */
-    width: 100%; /* Ensure slide takes full width */
+    width: 100%;
     box-sizing: border-box;
     position: relative;
-    aspect-ratio: 16 / 9; /* Set aspect ratio for slides (adjust as needed) */
+    background-color: transparent;
+    flex-shrink: 0;
 }
 
 .VueCarousel-slide img {
     display: block;
     width: 100%;
-    height: 100%; /* Ensure image fills the slide */
-    object-fit: cover; /* Maintain aspect ratio while covering the slide */
-    object-position: center; /* Center the image within the slide */
+    height: auto;
+    max-height: 600px;
+    object-fit: contain;
+    object-position: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .shimmerBgColor {
-    background-color: #fceae7;
+    background-color: transparent;
 }
 
 .w-100 {
@@ -105,7 +106,7 @@
 /* Responsive Styles */
 @media (max-width: 768px) {
     .prelative {
-        min-height: auto; /* Remove fixed height */
+        min-height: auto;
     }
 
     .headtop {
@@ -125,6 +126,10 @@
 
     .VueCarousel-dot--active {
         background-color: #000;
+    }
+
+    .VueCarousel-slide img {
+        max-height: 400px;
     }
 }
 
@@ -169,12 +174,12 @@
 /* Tablet and larger screens */
 @media (min-width: 992px) {
     .headtop .prelative {
-        min-height: auto; /* Remove fixed height */
+        min-height: auto;
     }
 }
 
 @media (min-width: 1200px) {
     .headtop .prelative {
-        min-height: auto; /* Remove fixed height */
+        min-height: auto;
     }
 }

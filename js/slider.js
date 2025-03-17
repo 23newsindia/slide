@@ -11,10 +11,22 @@ class ImageSlider {
         this.slideCount = this.slides.length;
         this.isAnimating = false;
         
-        // Set inner container width dynamically
-        this.inner.style.width = `${this.slideCount * 100}%`;
+        this.updateSliderWidth();
+        this.inner.style.transform = 'translate(0, 0)';
         
         this.init();
+    }
+
+    updateSliderWidth() {
+        // Set total width of inner container
+        const totalWidth = `${this.slideCount * 100}%`;
+        this.inner.style.width = totalWidth;
+        
+        // Set width for each individual slide
+        const slideWidth = `${100 / this.slideCount}%`;
+        this.slides.forEach(slide => {
+            slide.style.width = slideWidth;
+        });
     }
 
     init() {
@@ -46,14 +58,27 @@ class ImageSlider {
 
         // Auto advance slides
         setInterval(() => this.nextSlide(), 5000);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.updateSliderWidth();
+            this.goToSlide(this.currentSlide, false);
+        });
     }
 
-    goToSlide(index) {
+    goToSlide(index, animate = true) {
         if (this.isAnimating || index === this.currentSlide) return;
-        this.isAnimating = true;
+        
+        if (animate) {
+            this.isAnimating = true;
+        }
 
-        // Update slides
-        this.inner.style.transform = `translate(-${index * 100}%, 0)`;
+        // Calculate exact translation percentage
+        const translateX = -(index * (100 / this.slideCount));
+        
+        // Apply transition
+        this.inner.style.transition = animate ? 'transform 0.5s ease' : 'none';
+        this.inner.style.transform = `translate(${translateX}%, 0)`;
         
         // Update dots
         this.dots[this.currentSlide].classList.remove('VueCarousel-dot--active');
@@ -66,9 +91,12 @@ class ImageSlider {
 
         this.currentSlide = index;
 
-        setTimeout(() => {
-            this.isAnimating = false;
-        }, 500);
+        if (animate) {
+            setTimeout(() => {
+                this.isAnimating = false;
+                this.inner.style.transition = 'transform 0.5s ease';
+            }, 500);
+        }
     }
 
     nextSlide() {
